@@ -209,8 +209,6 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            loadTokens();
-            
             const createTokenBtn = document.getElementById('createTokenBtn');
             const tokenName = document.getElementById('tokenName');
             const message = document.getElementById('message');
@@ -218,13 +216,13 @@
             const tokenDisplay = document.getElementById('tokenDisplay');
             const copyTokenBtn = document.getElementById('copyTokenBtn');
             const closeModalBtn = document.getElementById('closeModalBtn');
-            
+
             createTokenBtn.addEventListener('click', async function() {
                 if (!tokenName.value) {
                     showMessage('请输入令牌名称', 'error');
                     return;
                 }
-                
+
                 try {
                     const response = await fetch('/tokens/create', {
                         method: 'POST',
@@ -233,17 +231,16 @@
                         },
                         body: new URLSearchParams({ name: tokenName.value })
                     });
-                    
+
                     const data = await response.json();
                     tokenDisplay.textContent = data.token;
                     tokenModal.style.display = 'flex';
-                    loadTokens();
                     tokenName.value = '';
                 } catch (error) {
                     showMessage('创建令牌失败', 'error');
                 }
             });
-            
+
             copyTokenBtn.addEventListener('click', function() {
                 const token = tokenDisplay.textContent;
                 navigator.clipboard.writeText(token).then(function() {
@@ -252,110 +249,14 @@
                     showMessage('复制失败，请手动复制', 'error');
                 });
             });
-            
+
             closeModalBtn.addEventListener('click', function() {
                 tokenModal.style.display = 'none';
             });
-            
-            function loadTokens() {
-                // Tokens are already rendered server-side
-                // Read from data-tokens attribute for reference
-                const listEl = document.getElementById('tokenList');
-                if (listEl && listEl.dataset.tokens) {
-                    try {
-                        return JSON.parse(listEl.dataset.tokens);
-                    } catch (e) {
-                        return [];
-                    }
-                }
-                return [];
-            }
 
-
-            }
-            
-            function renderTokens(tokens) {
-                const tokenList = document.getElementById('tokenList');
-                tokenList.innerHTML = '';
-                
-                if (tokens.length === 0) {
-                    tokenList.innerHTML = '<p>暂无令牌，请创建新令牌</p>';
-                    return;
-                }
-                
-                tokens.forEach(token => {
-                    const tokenItem = document.createElement('div');
-                    tokenItem.className = 'token-item';
-                    
-                    const tokenInfo = document.createElement('div');
-                    tokenInfo.className = 'token-info';
-                    
-                    const tokenName = document.createElement('div');
-                    tokenName.className = 'token-name';
-                    tokenName.textContent = token.name;
-                    
-                    const tokenCreated = document.createElement('div');
-                    tokenCreated.className = 'token-created';
-                    tokenCreated.textContent = new Date(token.created_at).toLocaleString();
-                    
-                    tokenInfo.appendChild(tokenName);
-                    tokenInfo.appendChild(tokenCreated);
-                    
-                    const tokenActions = document.createElement('div');
-                    tokenActions.className = 'token-actions';
-                    
-                    copyBtn.addEventListener('click', async function() {
-                        const newName = prompt('请输入新令牌名称:', token.name + ' (副本)');
-                        if (!newName) return;
-                        
-                        try {
-                            const response = await fetch('/tokens/copy', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                },
-                                body: new URLSearchParams({ 
-                                    token_id: token.id,
-                                    new_name: newName
-                                })
-                            });
-                            
-                            const data = await response.json();
-                            if (response.ok) {
-                                showMessage('令牌已复制，新令牌: ' + data.token.substring(0, 20) + '...', 'success');
-                                loadTokens();
-                            } else {
-                                showMessage(data.detail || '复制失败', 'error');
-                            }
-                        } catch (error) {
-                            showMessage('复制令牌失败', 'error');
-                        }
-                    });
-
-                    });
-                    
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'delete';
-                    deleteBtn.textContent = '删除';
-                    deleteBtn.addEventListener('click', function() {
-                        if (confirm('确定要删除此令牌吗？')) {
-                            deleteToken(token.id);
-                        }
-                    });
-                    
-                    tokenActions.appendChild(copyBtn);
-                    tokenActions.appendChild(deleteBtn);
-                    
-                    tokenItem.appendChild(tokenInfo);
-                    tokenItem.appendChild(tokenActions);
-                    
-                    tokenList.appendChild(tokenItem);
-                });
-            }
-            
             async function deleteToken(tokenId) {
                 if (!confirm('确定要删除此令牌吗？')) return;
-                
+
                 try {
                     const response = await fetch('/tokens/delete', {
                         method: 'POST',
@@ -364,35 +265,35 @@
                         },
                         body: new URLSearchParams({ token_id: tokenId })
                     });
-                    
+
                     const data = await response.json();
                     showMessage(data.message, 'success');
-                    location.reload(); // Reload to refresh token list
+                    location.reload();
                 } catch (error) {
                     showMessage('删除令牌失败', 'error');
                 }
             }
-            
+
             async function copyToken(tokenId, tokenName) {
                 const newName = prompt('请输入新令牌名称:', tokenName + ' (副本)');
                 if (!newName) return;
-                
+
                 try {
                     const response = await fetch('/tokens/copy', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: new URLSearchParams({ 
+                        body: new URLSearchParams({
                             token_id: tokenId,
                             new_name: newName
                         })
                     });
-                    
+
                     const data = await response.json();
                     if (response.ok) {
                         showMessage('令牌已复制，新令牌: ' + data.token.substring(0, 20) + '...', 'success');
-                        location.reload(); // Reload to refresh token list
+                        location.reload();
                     } else {
                         showMessage(data.detail || '复制失败', 'error');
                     }
@@ -400,13 +301,12 @@
                     showMessage('复制令牌失败', 'error');
                 }
             }
-            
+
             function showMessage(text, type) {
                 message.textContent = text;
                 message.className = `message ${type}`;
                 message.style.display = 'block';
-                
-                // 3秒后自动隐藏消息
+
                 setTimeout(function() {
                     message.style.display = 'none';
                 }, 3000);

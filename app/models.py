@@ -12,6 +12,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    Index,
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
@@ -62,6 +63,7 @@ class SP500Constituent(Base):
     __tablename__ = "sp500_constituents"
     __table_args__ = (
         UniqueConstraint("code", "effective_from", name="uq_code_effective_from"),
+        Index("ix_sp500_effective_dates", "effective_from", "effective_to"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

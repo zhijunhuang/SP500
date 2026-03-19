@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制台 - SP500 数据服务</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+        }
+        .header .user-info {
+            font-size: 14px;
+            color: #bdc3c7;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .card {
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .status-active {
+            background-color: #27ae60;
+            color: #fff;
+        }
+        .status-inactive {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+        .status-trialing {
+            background-color: #f39c12;
+            color: #fff;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-success {
+            background-color: #27ae60;
+        }
+        .btn-success:hover {
+            background-color: #229954;
+        }
+        .api-demo {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        .nav-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .nav-links a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SP500 数据服务</h1>
+        <div class="user-info">
+            登录为: {{ user.email }}
+            <a href="/auth/logout" style="color: #bdc3c7; margin-left: 10px;">退出登录</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>订阅状态</h2>
+            <p>
+                当前状态:
+                {% if user.subscription_status == 'active' %}
+                    <span class="status-badge status-active">已激活</span>
+                {% elif user.subscription_status == 'trialing' %}
+                    <span class="status-badge status-trialing">试用中</span>
+                {% else %}
+                    <span class="status-badge status-inactive">未激活</span>
+                {% endif %}
+            </p>
+            <p>订阅状态: {{ user.subscription_status or '无' }}</p>
+            {% if user.subscription_status != 'active' %}
+                <a href="/billing/subscribe" class="btn btn-success">立即订阅</a>
+            {% else %}
+                <a href="/billing/subscribe" class="btn">续订</a>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2>API 使用</h2>
+            <p>通过 API 接口获取 S&P 500 历史成分股数据。</p>
+            <div class="api-demo">
+                <strong>API 调用示例:</strong><br><br>
+                curl -H "Authorization: Bearer &lt;您的令牌&gt;" \<br>
+                &nbsp;&nbsp;http://localhost:8000/api/sp500/2024-01-15
+            </div>
+            <div class="nav-links">
+                <a href="/tokens">管理 API 令牌</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>数据来源</h2>
+            <p>数据来源于维基百科 "List of S&P 500 companies" 页面。</p>
+            <p>历史成分股数据对于回测交易策略至关重要，因为成分股会随时间变化。</p>
+            <p style="color: #666; font-size: 12px;">
+                注意：这是教育性质的 数据服务，并非官方 S&P  Dow Jones Indices 数据。
+            </p>
+        </div>
+    </div>
+</body>
+</html>

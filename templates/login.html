@@ -153,7 +153,7 @@ codeGroup.style.display = 'block';
             
             resendCodeBtn.addEventListener('click', async function() {
                 if (countdown > 0) return;
-                
+
                 try {
                     const response = await fetch('/auth/send-code', {
                         method: 'POST',
@@ -162,15 +162,12 @@ codeGroup.style.display = 'block';
                         },
                         body: new URLSearchParams({ email: email.value })
                     });
-                    
+
+                    const data = await response.json();
                     showMessage(data.message, 'success');
-                    
+
                     // 用户手动查看邮件填写验证码，不自动填充code
-                    
-                    // 重新启动倒计时
-                    countdown = 60;
-                    resendCodeBtn.disabled = true;
-                    
+
                     // 重新启动倒计时
                     countdown = 60;
                     resendCodeBtn.disabled = true;

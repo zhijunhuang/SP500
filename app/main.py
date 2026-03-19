@@ -4,13 +4,15 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from .routers import auth, billing, tokens, api
+from .routers.auth import get_current_user
 from .utils.db import init_db
+from .models import User
 
 
 def create_app() -> FastAPI:
@@ -51,9 +53,14 @@ def create_app() -> FastAPI:
         )
 
     @app.get("/dashboard", response_class=HTMLResponse)
-    async def dashboard(request: Request):
-        # 简单重定向到令牌管理页（后续可扩展成真正的仪表盘）
-        return RedirectResponse(url="/tokens", status_code=302)
+    async def dashboard(request: Request, user: User = Depends(get_current_user)):
+        """User dashboard - shows subscription status and provides links to manage tokens."""
+        if not user:
+            return RedirectResponse(url="/auth/login", status_code=302)
+        return templates.TemplateResponse(
+            "dashboard.html",
+            {"request": request, "user": user}
+        )
 
     return app
 

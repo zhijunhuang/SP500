@@ -40,7 +40,8 @@ def check_user_subscription(user_id: int, db: Session) -> bool:
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         return False
-    return user.subscription_status == "active"
+    # Allow active and trialing statuses
+    return user.subscription_status in ("active", "trialing")
 
 
 @router.get("/sp500/{target_date}")

@@ -10,6 +10,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from typing import Optional
+from collections import defaultdict
+import time
 
 from ..models import User, EmailLoginCode
 from ..utils.db import get_db
@@ -24,8 +26,18 @@ SMTP_PASS = os.getenv("SMTP_PASS", "")
 FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@example.com")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+if not SECRET_KEY:
+    SECRET_KEY = "dev-secret-key-change-in-production"
+    print("[WARNING] Using default SECRET_KEY. Set SECRET_KEY environment variable in production!")
+
 SESSION_COOKIE_NAME = "session"
+
+# Rate limiting for verify-code (in-memory, per email)
+# Structure: {email: [(timestamp, failed_attempts), ...]}
+_verify_code_attempts: dict = defaultdict(list)
+VERIFY_CODE_MAX_ATTEMPTS = 5
+VERIFY_CODE_LOCKOUT_SECONDS = 300  # 5 minutes
 
 # Session management using itsdangerous
 from itsdangerous import URLSafeTimedSerializer
@@ -107,9 +119,6 @@ def send_login_code(
     email: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    if existing_code:
-        return {"message": "验证码已发送，请注意查收"}
-    
     # 检查1分钟内是否已发送（防止高频点击）
     recent_sent = db.query(EmailLoginCode).filter(
         EmailLoginCode.email == email,
@@ -146,17 +155,33 @@ def verify_login_code(
     code: str = Form(...),
     db: Session = Depends(get_db)
 ):
+    # Check rate limiting
+    current_time = time.time()
+    attempts = _verify_code_attempts[email]
+
+    # Clean up old attempts (older than lockout period)
+    attempts[:] = [(ts, count) for ts, count in attempts if current_time - ts < VERIFY_CODE_LOCKOUT_SECONDS]
+
+    # Check if locked out
+    total_failed = sum(count for ts, count in attempts)
+    if total_failed >= VERIFY_CODE_MAX_ATTEMPTS:
+        raise HTTPException(status_code=429, detail="验证次数过多，请5分钟后再试")
+
     # 查找未使用且在有效期内的验证码
     login_code = db.query(EmailLoginCode).filter(
         EmailLoginCode.email == email,
-        EmailLoginCode.code == code,
         EmailLoginCode.used == False,
         EmailLoginCode.created_at >= datetime.utcnow() - timedelta(minutes=5)
     ).first()
-    
-    if not login_code:
+
+    if not login_code or not secrets.compare_digest(login_code.code, code):
+        # Record failed attempt
+        attempts.append((current_time, 1))
         raise HTTPException(status_code=400, detail="验证码无效或已过期")
-    
+
+    # Clear failed attempts on success
+    _verify_code_attempts[email] = []
+
     # 标记验证码为已使用
     login_code.used = True
     db.commit()

@@ -2,11 +2,12 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
-# 从config目录导入数据库配置
-from ..config.db import dbname, host, port, user, password
-
-# 构建MySQL连接字符串
-DATABASE_URL = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4"
+# Support DATABASE_URL environment variable override
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    # Fallback to config/db.py values
+    from ..config.db import dbname, host, port, user, password
+    DATABASE_URL = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4"
 
 
 class Base(DeclarativeBase):
