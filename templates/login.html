@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - SP500 数据服务</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="email"],
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>登录</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">邮箱</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <button type="button" id="sendCodeBtn">发送验证码</button>
+            <button type="button" id="resendCodeBtn" style="display: none;" disabled>60s后重发</button>
+            
+            <div class="form-group" id="codeGroup" style="display: none;">
+                <label for="code">验证码</label>
+                <input type="text" id="code" name="code" maxlength="6">
+            </div>
+            <button type="button" id="verifyCodeBtn" style="display: none;">验证登录</button>
+        </form>
+        <div id="message" class="message" style="display: none;"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sendCodeBtn = document.getElementById('sendCodeBtn');
+            const resendCodeBtn = document.getElementById('resendCodeBtn');
+            const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+            const codeGroup = document.getElementById('codeGroup');
+            const message = document.getElementById('message');
+            const email = document.getElementById('email');
+            const code = document.getElementById('code');
+            
+            let countdown = 0;
+            let countdownInterval = null;
+            
+            sendCodeBtn.addEventListener('click', async function() {
+                if (countdown > 0) {
+                    showMessage('等待倒计时结束', 'error');
+                    return;
+                }
+                if (!email.value) {
+                    showMessage('请输入邮箱', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/auth/send-code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({ email: email.value })
+                    });
+                    
+                    const data = await response.json();
+                    showMessage(data.message, 'success');
+                    
+codeGroup.style.display = 'block';
+                    verifyCodeBtn.style.display = 'block';
+                    
+                    // 启动60秒倒计时
+                    countdown = 60;
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    countdownInterval = setInterval(() => {
+                        countdown--;
+                        resendCodeBtn.textContent = countdown + 's后重发';
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            resendCodeBtn.textContent = '发送验证码';
+                            resendCodeBtn.disabled = false;
+                        }
+                    }, 1000);
+                } catch (error) {
+                    showMessage('发送验证码失败', 'error');
+                }
+            });
+            
+            resendCodeBtn.addEventListener('click', async function() {
+                if (countdown > 0) return;
+                
+                try {
+                    const response = await fetch('/auth/send-code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({ email: email.value })
+                    });
+                    
+                    showMessage(data.message, 'success');
+                    
+                    // 用户手动查看邮件填写验证码，不自动填充code
+                    
+                    // 重新启动倒计时
+                    countdown = 60;
+                    resendCodeBtn.disabled = true;
+                    
+                    // 重新启动倒计时
+                    countdown = 60;
+                    resendCodeBtn.disabled = true;
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    countdownInterval = setInterval(() => {
+                        countdown--;
+                        resendCodeBtn.textContent = countdown + 's后重发';
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            resendCodeBtn.textContent = '发送验证码';
+                            resendCodeBtn.disabled = false;
+                        }
+                    }, 1000);
+                } catch (error) {
+                    showMessage('发送验证码失败', 'error');
+                }
+            });
+            
+            verifyCodeBtn.addEventListener('click', async function() {
+                if (!email.value || !code.value) {
+                    showMessage('请输入邮箱和验证码', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/auth/verify-code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({ email: email.value, code: code.value })
+                    });
+                    
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        const data = await response.json();
+                        showMessage(data.detail || '验证失败', 'error');
+                    }
+                } catch (error) {
+                    showMessage('验证失败', 'error');
+                }
+            });
+            
+            function showMessage(text, type) {
+                message.textContent = text;
+                message.className = `message ${type}`;
+                message.style.display = 'block';
+                
+                // 3秒后自动隐藏消息
+                setTimeout(function() {
+                    if (type === 'success') {
+                        message.style.display = 'none';
+                    }
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

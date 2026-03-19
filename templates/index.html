@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SP500 Data Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .language-switch {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .lang-btn {
+            background: none;
+            border: 1px solid #3498db;
+            color: #3498db;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .lang-btn:hover {
+            background-color: #3498db;
+            color: #fff;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            color: #555;
+        }
+        p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .features {
+            margin: 30px 0;
+        }
+        .feature-item {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            border-left: 3px solid #3498db;
+        }
+        .quote {
+            font-style: italic;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 3px solid #27ae60;
+            margin: 20px 0;
+        }
+        .cta {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="language-switch">
+            <a href="#" class="lang-btn" data-lang="en">English</a>
+            <a href="#" class="lang-btn" data-lang="zh">中文</a>
+        </div>
+        
+        <!-- English Content -->
+        <div id="en-content">
+            <h1>SP500 Data Service</h1>
+            <p>A historical S&P 500 constituent data service based on Wikipedia, providing you with accurate historical constituent lists.</p>
+            
+            <h2>Why do you need historically accurate S&P 500 constituent lists?</h2>
+            <p>As emphasized in the book "Stocks on the Move", using historically accurate constituent data is crucial for backtesting and investment research. Many investors and researchers mistakenly use the current S&P 500 constituent list to represent past situations, which can lead to biased results.</p>
+            
+            <div class="quote">
+                "The problem is of course that you can't assume that you would have traded the current S&P 500 stocks for the past ten years."
+            </div>
+            
+            <div class="quote">
+                "So if you run a 10 year momentum stock simulation on the current S&P 500 stocks, of course it's going to look amazing. You could even argue that the S&P 500, along with most other equity indexes, are already momentum strategies. No, what you need is to take historical joiners and leavers into account."
+            </div>
+            
+            <div class="quote">
+                "You absolutely need to have historical constituents information, delisted stock data and cash dividend data."
+            </div>
+            
+            <p>Accurate historical constituent data can help you:</p>
+            <div class="feature-item">
+                <strong>Get accurate backtesting results</strong>: Avoid survivorship bias and ensure your strategy is tested based on real market conditions.
+            </div>
+            <div class="feature-item">
+                <strong>Understand market evolution</strong>: Learn which companies joined or left the S&P 500 and the reasons behind these changes.
+            </div>
+            <div class="feature-item">
+                <strong>Develop more effective investment strategies</strong>: Based on real historical data, you can develop strategies that better adapt to market changes.
+            </div>
+            
+            <h2>Service Features</h2>
+            <div class="feature-item">
+                <strong>User Login</strong>: Email verification code login, supporting automatic registration.
+            </div>
+            <div class="feature-item">
+                <strong>User Subscription</strong>: $10 per year, securely processed through Stripe.
+            </div>
+            <div class="feature-item">
+                <strong>Token Management</strong>: Create, copy, delete access tokens for easy API calls.
+            </div>
+            <div class="feature-item">
+                <strong>HTTP API & MCP Service</strong>: Return the actual S&P 500 constituent list for the specified date.
+            </div>
+            
+            <div class="cta">
+                <a href="/auth/login" class="btn">Get Started</a>
+            </div>
+        </div>
+        
+        <!-- Chinese Content -->
+        <div id="zh-content" style="display: none;">
+            <h1>SP500 数据服务</h1>
+            <p>基于维基百科的标普 500 成分股历史数据服务，为您提供准确的历史成分股列表。</p>
+            
+            <h2>为什么需要历史真实的标普 500 成分列表？</h2>
+            <p>正如《Stocks on the Move》一书中所强调的，在进行回测和投资研究时，使用历史真实的成分股数据至关重要。许多投资者和研究人员在回测策略时，错误地使用了当前的标普 500 成分股列表来代表过去的情况，这会导致结果产生偏差。</p>
+            
+            <div class="quote">
+                "问题当然是，你不能假设你在过去十年里交易的是当前的标普500股票。"
+            </div>
+            
+            <div class="quote">
+                "所以如果你在当前的标普500股票上运行10年的动量股票模拟，当然会看起来很棒。你甚至可以说，标普500和大多数其他股票指数已经是动量策略了。不，你需要考虑历史上的加入和退出的股票。"
+            </div>
+            
+            <div class="quote">
+                "你绝对需要有历史成分股信息、已退市股票数据和现金股息数据。"
+            </div>
+            
+            <p>真实的历史成分数据能够帮助您：</p>
+            <div class="feature-item">
+                <strong>获得准确的回测结果</strong>：避免存活偏差，确保您的策略是基于真实的市场环境测试的。
+            </div>
+            <div class="feature-item">
+                <strong>理解市场演变</strong>：了解哪些公司加入或退出了标普 500，以及这些变化背后的原因。
+            </div>
+            <div class="feature-item">
+                <strong>制定更有效的投资策略</strong>：基于真实的历史数据，您可以开发出更适应市场变化的策略。
+            </div>
+            
+            <h2>服务功能</h2>
+            <div class="feature-item">
+                <strong>用户登录</strong>：通过邮箱验证码登录，支持自动注册。
+            </div>
+            <div class="feature-item">
+                <strong>用户订阅</strong>：每年 $10，通过 Stripe 安全收款。
+            </div>
+            <div class="feature-item">
+                <strong>令牌管理</strong>：创建、拷贝、删除访问令牌，方便 API 调用。
+            </div>
+            <div class="feature-item">
+                <strong>HTTP 接口 & MCP 服务</strong>：按日期返回当天真实的标普 500 成分股列表。
+            </div>
+            
+            <div class="cta">
+                <a href="/auth/login" class="btn">开始使用</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const langBtns = document.querySelectorAll('.lang-btn');
+            const enContent = document.getElementById('en-content');
+            const zhContent = document.getElementById('zh-content');
+            
+            langBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const lang = this.getAttribute('data-lang');
+                    
+                    if (lang === 'en') {
+                        enContent.style.display = 'block';
+                        zhContent.style.display = 'none';
+                    } else if (lang === 'zh') {
+                        enContent.style.display = 'none';
+                        zhContent.style.display = 'block';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
