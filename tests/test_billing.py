@@ -4,9 +4,10 @@ Acceptance tests for billing pages.
 Tests:
 - /billing/subscribe requires login
 - /billing/success and /billing/cancel pages load
-- create-checkout-session requires login
+- create-checkout-session with mocked Stripe
 """
 import pytest
+from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -56,13 +57,65 @@ class TestCreateCheckoutSession:
         response = client.post("/billing/create-checkout-session")
         assert response.status_code == 401
 
-    # Note: Testing actual Stripe checkout requires real API keys or Stripe mocking
-    # The endpoint works correctly - it just fails with invalid/mock keys
+    def test_create_checkout_with_mocked_stripe(
+        self,
+        client: TestClient,
+        valid_session_cookie: str,
+        sample_user: User
+    ):
+        """Create checkout session should work with mocked Stripe."""
+        mock_customer = MagicMock()
+        mock_customer.id = "cus_test123"
 
+        mock_session = MagicMock()
+        mock_session.url = "https://checkout.stripe.com/test"
 
-class TestWebhook:
-    """Tests for /billing/webhook endpoint."""
+        with patch("app.routers.billing.stripe.Customer") as MockCustomer, \
+             patch("app.routers.billing.stripe.checkout.Session") as MockCheckout:
 
-    # Note: Webhook tests that interact with the database in async context
-    # require proper session management. The webhook handler is functional
-    # but testing it fully requires Stripe event mocking or integration tests.
+            MockCustomer.create.return_value = mock_customer
+            MockCheckout.create.return_value = mock_session
+
+            # User already has stripe_customer_id set by fixture
+            sample_user.stripe_customer_id = "cus_existing123"
+
+            response = client.post(
+                "/billing/create-checkout-session",
+                cookies={"session": valid_session_cookie}
+            )
+
+            assert response.status_code == 200
+            assert response.json()["url"] == "https://checkout.stripe.com/test"
+
+    def test_create_checkout_creates_customer_if_missing(
+        self,
+        client: TestClient,
+        valid_session_cookie: str,
+        sample_user: User,
+        test_db: Session
+    ):
+        """Create checkout session should create Stripe customer if missing."""
+        sample_user.stripe_customer_id = None  # Ensure no customer ID
+
+        mock_customer = MagicMock()
+        mock_customer.id = "cus_newly_created"
+
+        mock_session = MagicMock()
+        mock_session.url = "https://checkout.stripe.com/test"
+
+        with patch("app.routers.billing.stripe.Customer") as MockCustomer, \
+             patch("app.routers.billing.stripe.checkout.Session") as MockCheckout:
+
+            MockCustomer.create.return_value = mock_customer
+            MockCheckout.create.return_value = mock_session
+
+            response = client.post(
+                "/billing/create-checkout-session",
+                cookies={"session": valid_session_cookie}
+            )
+
+            assert response.status_code == 200
+            # Verify customer was created
+            assert MockCustomer.create.called
+            test_db.refresh(sample_user)
+            assert sample_user.stripe_customer_id == "cus_newly_created"

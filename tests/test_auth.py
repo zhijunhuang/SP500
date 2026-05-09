@@ -189,3 +189,50 @@ class TestLoginPage:
         response = client.get("/auth/login")
         assert response.status_code == 200
         assert "text/html" in response.headers.get("content-type", "")
+
+
+class TestGetCurrentUser:
+    """Tests for get_current_user dependency."""
+
+    def test_unauthenticated_request_to_protected_route(
+        self,
+        client: TestClient
+    ):
+        """Protected routes should redirect to login when no session."""
+        # Don't follow redirects - check the initial 302 response
+        response = client.get("/dashboard", follow_redirects=False)
+        assert response.status_code == 302
+        assert response.headers["location"] == "/auth/login"
+
+    def test_invalid_session_cookie(
+        self,
+        client: TestClient
+    ):
+        """Invalid session cookie should be treated as unauthenticated."""
+        response = client.get(
+            "/dashboard",
+            cookies={"session": "invalid_session_token"},
+            follow_redirects=False
+        )
+        assert response.status_code == 302
+        assert response.headers["location"] == "/auth/login"
+
+
+class TestSendVerificationEmail:
+    """Tests for email sending behavior."""
+
+    def test_send_code_logs_when_smtp_not_configured(
+        self,
+        client: TestClient,
+        capfd
+    ):
+        """When SMTP is not configured, code should be logged to console."""
+        response = client.post(
+            "/auth/send-code",
+            data={"email": "smtp@example.com"}
+        )
+        assert response.status_code == 200
+
+        # Check that the code was logged
+        captured = capfd.readouterr()
+        assert "Would send to smtp@example.com" in captured.out

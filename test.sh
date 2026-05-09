@@ -8,5 +8,5 @@ export STRIPE_PRICE_ID="price_mock"
 export SMTP_HOST=""
 export BASE_URL="http://localhost:8000"
 
-echo "Running acceptance tests..."
-pytest tests/ -v --tb=short
+echo "Running acceptance tests with coverage..."
+pytest tests/ -v --tb=short --cov=app --cov-report=term-missing

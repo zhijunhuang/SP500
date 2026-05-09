@@ -1,4 +1,7 @@
 import os
+import pymysql
+pymysql.install_as_MySQLdb()
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
@@ -7,7 +10,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     # Fallback to config/db.py values
     from ..config.db import dbname, host, port, user, password
-    DATABASE_URL = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4"
+    DATABASE_URL = f"mysql+pymysql://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4"
 
 
 class Base(DeclarativeBase):

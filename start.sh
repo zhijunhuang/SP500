@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-export DATABASE_URL="mysql+mysqlconnector://admin:passw0rd@localhost:3306/sp500_test?charset=utf8mb4"
-export SECRET_KEY="test-secret-key-for-testing-only"
-export STRIPE_API_KEY="sk_test_mock"
+# 不设置 DATABASE_URL，使用 app/config/db.py 中的配置 (sp500)
+export SECRET_KEY="your-secret-key-here-change-in-production"
+export STRIPE_API_KEY="sk_test_..."
 export SMTP_HOST=""
 export BASE_URL="http://localhost:8000"
 
